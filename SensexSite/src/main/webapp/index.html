@@ -28,11 +28,6 @@
 
 <body>
 
-	<div class="starter-template">
-		<input type="text" id="userinput" /> <br> <input type="submit"
-			value="Send Message to Server" onclick="start()" />
-	</div>
-
 	<div class="section">
 		<div class="container">
 			<div class="columns">
@@ -231,18 +226,13 @@
 
         function onOpen(event) {
             document.getElementById('messages').innerHTML = 'Now Connection established';
+            webSocket.send('');
         }
 
         function onError(event) {
             alert(event.data);
         }
 
-        function start() {
-            var text = document.getElementById("userinput").value;
-
-            webSocket.send(text);
-            return false;
-        }
     </script>
 </body>
 
