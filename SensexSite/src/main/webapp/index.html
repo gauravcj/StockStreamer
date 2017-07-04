@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+<title>Sensex</title>
+
+<link rel="stylesheet" href="bulma.css">
+<script src="https://code.jquery.com/jquery-3.2.1.js"
+	integrity="sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE="
+	crossorigin="anonymous"></script>
+<link
+	href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
+	rel="stylesheet"
+	integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN"
+	crossorigin="anonymous">
+
+<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+<!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+
+	<div class="starter-template">
+		<input type="text" id="userinput" /> <br> <input type="submit"
+			value="Send Message to Server" onclick="start()" />
+	</div>
+
+	<div class="section">
+		<div class="container">
+			<div class="columns">
+				<div class="column">
+					<span class="title is-3">Sensex</span>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="section">
+		<div class="container">
+			<div class="columns">
+				<table class="table" id="myTable">
+					<thead>
+                        <td id='name_header' onclick="sortByName(0)">Stock Name<i class="fa fa-sort is-pulled-right" aria-hidden="true"></i></td>
+                        <td id='value_header' onclick="sortByValue(1)">Stock Value<i class="fa fa-sort is-pulled-right" aria-hidden="true"></i></td>
+                        <td id='change_header' onclick="sortByValue(2)">Change<i class="fa fa-sort is-pulled-right" aria-hidden="true"></i></td>
+					</thead>
+					<tbody id="tablebody">
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+	<div id="messages"></div>
+
+
+
+	<script>
+        var webSocket = new WebSocket('ws://ec2-13-126-29-210.ap-south-1.compute.amazonaws.com:8080/sensex/websocket');
+        //var webSocket = new WebSocket('ws://localhost:8080/SensexSite/websocket');
+
+        function sortByName(n) {
+            var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+            table = document.getElementById("myTable");
+            switching = true;
+            //Set the sorting direction to ascending:
+            dir = "asc";
+            /*Make a loop that will continue until
+            no switching has been done:*/
+            while (switching) {
+                //start by saying: no switching is done:
+                switching = false;
+                rows = table.getElementsByTagName("tr");
+                /*Loop through all table rows (except the
+                first, which contains table headers):*/
+                for (i = 1; i < (rows.length - 1); i++) {
+                    //start by saying there should be no switching:
+                    shouldSwitch = false;
+                    /*Get the two elements you want to compare,
+                    one from current row and one from the next:*/
+                    x = rows[i].getElementsByTagName("td")[n];
+                    y = rows[i + 1].getElementsByTagName("td")[n];
+                    /*check if the two rows should switch place,
+                    based on the direction, asc or desc:*/
+                    if (dir == "asc") {
+                        if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+                            //if so, mark as a switch and break the loop:
+                            shouldSwitch = true;
+                            $("#name_header").html('Stock Name<i class="fa fa-sort-alpha-asc is-pulled-right" aria-hidden="true"></i>');
+                            $("#change_header").html('Change<i class="fa fa-sort is-pulled-right" aria-hidden="true"></i></td>');
+                            $("#value_header").html('Stock Value<i class="fa fa-sort is-pulled-right" aria-hidden="true"></i></td>');
+                            break;
+                        }
+                    } else if (dir == "desc") {
+                        if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+                            //if so, mark as a switch and break the loop:
+                            shouldSwitch = true;
+                            $("#name_header").html('Stock Name<i class="fa fa-sort-alpha-desc is-pulled-right" aria-hidden="true"></i>');
+                            $("#change_header").html('Change<i class="fa fa-sort is-pulled-right" aria-hidden="true"></i></td>');
+                            $("#value_header").html('Stock Value<i class="fa fa-sort is-pulled-right" aria-hidden="true"></i></td>');
+                            break;
+                        }
+                    }
+                }
+                if (shouldSwitch) {
+                    /*If a switch has been marked, make the switch
+                    and mark that a switch has been done:*/
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                    //Each time a switch is done, increase this count by 1:
+                    switchcount++;
+                } else {
+                    /*If no switching has been done AND the direction is "asc",
+                    set the direction to "desc" and run the while loop again.*/
+                    if (switchcount == 0 && dir == "asc") {
+                        dir = "desc";
+                        switching = true;
+                    }
+                }
+            }
+        }
+
+        function sortByValue(n) {
+            var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+            table = document.getElementById("myTable");
+            switching = true;
+            dir = "asc";
+            while (switching) {
+                switching = false;
+                rows = table.getElementsByTagName("tr");
+                for (i = 1; i < (rows.length - 1); i++) {
+                    shouldSwitch = false;
+                    x = parseFloat(rows[i].getElementsByTagName("td")[n].innerText);
+                    y = parseFloat(rows[i + 1].getElementsByTagName("td")[n].innerText);
+                    if (dir == "asc") {
+                        if (x > y) {
+                            shouldSwitch = true;
+                            if(n==1){
+                                $("#value_header").html('Stock Value<i class="fa fa-sort-numeric-asc is-pulled-right" aria-hidden="true"></i>');
+                                $("#name_header").html('Stock Name<i class="fa fa-sort is-pulled-right" aria-hidden="true"></i></td>');
+                                $("#change_header").html('Change<i class="fa fa-sort is-pulled-right" aria-hidden="true"></i></td>');
+                            }
+                            else if(n==2){
+                                $("#change_header").html('Change<i class="fa fa-sort-amount-asc is-pulled-right" aria-hidden="true"></i>');
+                                $("#name_header").html('Stock Name<i class="fa fa-sort is-pulled-right" aria-hidden="true"></i></td>');
+                                $("#value_header").html('Stock Value<i class="fa fa-sort is-pulled-right" aria-hidden="true"></i></td>');
+                            }
+                            break;
+                        }
+                    } else if (dir == "desc") {
+                        if (x < y) {
+                            shouldSwitch = true;
+                            if(n==1){
+                                $("#value_header").html('Stock Value<i class="fa fa-sort-numeric-desc is-pulled-right" aria-hidden="true"></i>');
+                                $("#name_header").html('Stock Name<i class="fa fa-sort is-pulled-right" aria-hidden="true"></i></td>');
+                                $("#change_header").html('Change<i class="fa fa-sort is-pulled-right" aria-hidden="true"></i></td>');
+                            }
+                            else if(n==2){
+                                $("#change_header").html('Change<i class="fa fa-sort-amount-desc is-pulled-right" aria-hidden="true"></i>');
+                                $("#name_header").html('Stock Name<i class="fa fa-sort is-pulled-right" aria-hidden="true"></i></td>');
+                                $("#value_header").html('Stock Value<i class="fa fa-sort is-pulled-right" aria-hidden="true"></i></td>');
+                            }
+                            break;
+                        }
+                    }
+                }
+                if (shouldSwitch) {
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                    switchcount++;
+                } else {
+                    if (switchcount == 0 && dir == "asc") {
+                        dir = "desc";
+                        switching = true;
+                    }
+                }
+            }
+        }
+
+        updateDisplay = function (data) {
+            var stock = JSON.parse(data);
+            console.log(stock);
+            var progStockName = stock.stockname.replace(/\s/g, "_");
+            if ($("#tablebody").find("#" + progStockName).length == 0) {
+                var newStockDisp = "<tr id = '" + progStockName + "'><td id='stockname'>" + stock.stockname + "</td><td id = 'stockvalue_" + progStockName + "'>" + stock.stockvalue + "</td><td id='delta'>-</td></tr>";
+                $(newStockDisp).appendTo($("#tablebody"));
+            }
+            else {
+                var elem = $("#tablebody").find("#" + progStockName).find($("#stockvalue_" + progStockName));
+                console.log(elem.text());
+                var oldValue = parseFloat(elem.text());
+                var newValue = stock.stockvalue;
+                var diff = (newValue - oldValue).toFixed(3);
+                elem.text(newValue);
+                var deltaElem = $("#" + progStockName).find("#delta");
+                console.log(elem);
+                console.log(diff);
+                if (diff > 0) {
+                    deltaElem.html('<i class="fa fa-arrow-up" aria-hidden="true" style="color: green"></i>&nbsp;' + diff);
+                }
+                else if (diff < 0) {
+                    deltaElem.html('<i class="fa fa-arrow-down" aria-hidden="true" style="color: red"></i>&nbsp;' + diff);
+                }
+                else {
+                    deltaElem.html('<b aria-hidden="true" style="color: blue"></b>&nbsp;' + diff);
+                }
+            }
+        
+        }
+        webSocket.onerror = function (event) {
+            onError(event)
+        };
+
+        webSocket.onopen = function (event) {
+            onOpen(event)
+        };
+
+        webSocket.onmessage = function (event) {
+            onMessage(event)
+        };
+
+        function onMessage(event) {
+            updateDisplay(event.data);
+        }
+
+        function onOpen(event) {
+            document.getElementById('messages').innerHTML = 'Now Connection established';
+        }
+
+        function onError(event) {
+            alert(event.data);
+        }
+
+        function start() {
+            var text = document.getElementById("userinput").value;
+
+            webSocket.send(text);
+            return false;
+        }
+    </script>
+</body>
+
+</html>

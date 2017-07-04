@@ -1,0 +1,6 @@
+target
+.settings
+*.prefs
+*.class
+.project
+.DS_Store
